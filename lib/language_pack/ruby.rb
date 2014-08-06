@@ -616,14 +616,15 @@ ERROR
 
       load_bower_cache
 
-      pipe("./node_modules/bower/bin/bower install --config.storage.packages=vendor/bower/packages --config.storage.registry=vendor/bower/registry --config.tmp=vendor/bower/tmp 2>&1")
-      if $?.success?
-        log "bower", :status => "success"
-        puts "Cleaning up the bower tmp."
-        FileUtils.rm_rf("vendor/bower/tmp")
-        cache.store "vendor/bower"
+      bowerinstall = rake.task("bower:install")
+      return true unless bowerinstall.is_defined?
+
+      topic "Bower Install"
+      bowerinstall.invoke(env: rake_env)
+      if bowerinstall.success?
+        puts "Bower install completed (#{"%.2f" % bowerinstall.time}s)"
       else
-        error error_message
+        puts bowerinstall.output
       end
     end
   end
